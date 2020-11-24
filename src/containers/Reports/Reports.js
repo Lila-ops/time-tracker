@@ -1,6 +1,8 @@
-import React, { Component, Fragment } from 'react';
+import React, { 
+    Component, 
+    Fragment 
+} from 'react';
 import { connect } from 'react-redux';
-import { v4 as uuidv4 } from 'uuid';
 import { 
     ListGroup, 
     Form, 
@@ -15,111 +17,92 @@ import {
     td
 } from 'react-bootstrap';
 
+import * as actions from '../../store/time';
+
 class Report extends Component {
     state = {
-        loadedProject: {},
-        listAddedTimes: [],
-        totalAddedHours: 0,   
-        addedTime: {
-            id: '',
-            time: ''
-        }
+        time: '',
+        projectId: '',
+        timeItems: [],
+        inc: true
     }
 
     componentDidMount() {
         this.loadData();
-    }
-
-    loadData() {
-        const loadedProjectId = this.props.match.params.id;
-        const data = this.props.project.filter(item => item.id === loadedProjectId);
-
-        const item = {
-            name: data[0].name,
-            desc: data[0].desc,
-            time: data[0].time
-        }
-
-        this.setState({loadedProject: item});
-    }
+    };
 
     resetAddedTime() {
-        const time = {
-            id: '',
-            time: ''
-        }
+        this.setState({ time: ''});
+    };
 
-        this.setState({ addedTime: time});
-    }
+    loadData() {
+        const id = this.props.match.params.id;
+        this.props.onFetchTime();
+        this.setState({projectId: id});
+    };
 
     inputChangeHandler = (e) => {
         const { name, value } = e.target;
-
         const updatedForm = {
             ...this.state
         };
 
-        const updatedFormElement = {
-            ...updatedForm.addedTime
-        };
-
-        updatedFormElement[name] = value;
-
-        const time = {
-            id: '',
-            time: updatedFormElement[name]
-        }
-
-        this.setState({ addedTime: time});
-    }
+        updatedForm[name] = value;
+        this.setState({ time: updatedForm[name]});
+    };
 
     formHandler = (e) => {
         e.preventDefault();
         
-        const addedTime = {
-            id: uuidv4(),
-            time: this.state.addedTime.time
+        const timeItem = {
+            time: this.state.time,
+            projectId: this.state.projectId
         }
 
-        const listAddedTimes = this.state.listAddedTimes.concat(addedTime);
-        const totalAddedHours = parseInt(this.state.totalAddedHours) + parseInt(addedTime.time);
-
-        this.setState({
-            totalAddedHours: totalAddedHours,
-            listAddedTimes: listAddedTimes
-        });
-
+        this.props.onCreateData(timeItem);
         this.resetAddedTime();
-    }
+    };
 
-    onDeleteTime = (timeEl) => {
-        const removeTime = this.state.listAddedTimes.filter(item => item.id !== timeEl.id);
-        const totalAddedHours = parseInt(this.state.totalAddedHours) - parseInt(timeEl.time);
-
-        this.setState({
-            totalAddedHours: totalAddedHours,
-            listAddedTimes: removeTime
-        });
-    }
-
+    onDeleteTime = (id) => {
+        this.props.onDeleteProject(id);
+    };
+    
     render() {
         let timeTable = <tr><td style={{textAlign: 'center'}}>The table is empty</td><td></td></tr>;
-        if (this.state.listAddedTimes.length > 0) {
-            timeTable = this.state.listAddedTimes.map((item) => (
-                <tr key={item.id}>
-                    <td>{item.time}</td>
-                    <td>
-                        <Button variant="dark" className="ml-1" onClick={() => this.onDeleteTime(item)}>Delete</Button>
-                    </td>
-                </tr>
-            ));
-        }
+        const time = this.props.time.filter(item => item.projectId === this.state.projectId);
+
+        let project = {};
+        this.props.project.map((item) => {
+            if (item.id === this.state.projectId) {
+                return project = {...item};
+            }
+            return project;
+        });
+
+        let totalHours = 0;
+        if (time.length > 0) {
+               timeTable = time.map((item) => {
+                    if (this.state.inc) {
+                        totalHours += parseInt(item.time);
+                    } else {
+                        totalHours -= parseInt(item.time);
+                    }
+  
+                   return (
+                        <tr key={item.id}>
+                            <td>{item.time}</td>
+                            <td>
+                                <Button variant="dark" className="ml-1" onClick={() => this.onDeleteTime(item.id)}>Delete</Button>
+                            </td>
+                        </tr>
+                    )});
+                }
         return (
             <Fragment>
                 <ListGroup>
-                    <ListGroup.Item>Name: {this.state.loadedProject.name}</ListGroup.Item>
-                    <ListGroup.Item>Description: {this.state.loadedProject.desc}</ListGroup.Item>
-                    <ListGroup.Item>Total added hours: {this.state.totalAddedHours}</ListGroup.Item>
+                    <ListGroup.Item>Name: {project.name}</ListGroup.Item>
+                    <ListGroup.Item>Description: {project.desc}</ListGroup.Item>
+                    <ListGroup.Item>Total hours: {totalHours}</ListGroup.Item>
                 </ListGroup>
                 <Container className="mt-5">
                     <Form onSubmit={this.formHandler}>
@@ -128,7 +111,7 @@ class Report extends Component {
                                 <Form.Control 
                                     placeholder="Project time" 
                                     name="time" 
-                                    value={this.state.addedTime.time} 
+                                    value={this.state.time} 
                                     onChange={this.inputChangeHandler} />
                             </Col>
                             <Col>
@@ -156,8 +139,17 @@ class Report extends Component {
 
 const mapStateToProps = state => {
     return {
+        time: state.time,
         project: state.projects
     };
 }
 
-export default connect(mapStateToProps)(Report);
+const mapDispatchToProps = dispatch => {
+    return {
+        onFetchTime: (id) => dispatch(actions.fetchTime(id)),
+        onCreateData: (addedTime) => dispatch(actions.addTime(addedTime)),
+        onDeleteProject: (id) => dispatch(actions.deleteTime(id)),
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Report);

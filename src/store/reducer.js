@@ -2,7 +2,7 @@ import * as actionTypes from './actions';
 
 const initialState = {
     projects: [],
-    loading: false
+    time: []
 }
 
 const reducer = ( state = initialState, action ) => {
@@ -11,11 +11,9 @@ const reducer = ( state = initialState, action ) => {
         case actionTypes.FETCH_PROJECTS_SUCCESS:
             return {
                 ...state,
-                projects: action.projects,
-                loading: false
+                projects: action.projects
             };  
         case actionTypes.CREATE_PROJECT_SUCCESS:
-            console.log('[CREATE_PROJECT_SUCCESS]', action);
             return {
                 ...state,
                 projects: state.projects.concat({id: action.id, name: action.project.name, desc: action.project.desc, time: action.project.time})
@@ -36,54 +34,90 @@ const reducer = ( state = initialState, action ) => {
                 projects: editedArray
             };  
         case actionTypes.DELETE_PROJECT_SUCCESS:
-            const newArray = state.projects.filter(item => item.id !== action.id);
+            const newProjectArray = state.projects.filter(item => item.id !== action.id);
             return {
                 ...state,
-                projects: newArray
+                projects: newProjectArray
             };             
         
         case actionTypes.CREATE_PROJECT_START:
             return {
-                ...state,
-                loading: true
+                ...state
             };  
         case actionTypes.CREATE_PROJECT_FAIL:
             return {
-                ...state,
-                loading: false
+                ...state
             };     
         case actionTypes.EDIT_PROJECT_START:
             return {
-                ...state,
-                loading: true
+                ...state
             };   
         case actionTypes.EDIT_PROJECT_FAIL:
             return {
-                ...state,
-                loading: false
+                ...state
             };      
         case actionTypes.DELETE_PROJECT_START:
             return {
-                ...state,
-                loading: true
+                ...state
             };   
         case actionTypes.DELETE_PROJECT_FAIL:
             return {
-                ...state,
-                loading: false
+                ...state
             };  
         case actionTypes.FETCH_PROJECTS_START:
             return {
                 ...state,
-                loading: true
+                loading: true,
+                disabled: true
             };   
         case actionTypes.FETCH_PROJECTS_FAIL:
             return {
-                ...state,
-                loading: false
+                ...state
             };  
         
         //Time
+        case actionTypes.FETCH_TIME_SUCCESS:
+            return {
+                ...state,
+                time: action.time
+            }; 
+        case actionTypes.FETCH_TIME_START:
+            return {
+                ...state
+            };   
+        case actionTypes.FETCH_TIME_FAIL:
+            return {
+                ...state
+            };  
+        
+        case actionTypes.CREATE_TIME_SUCCESS:
+            return {
+                ...state,
+                time: state.time.concat({id: action.id, time: action.time.time, projectId: action.time.projectId})
+            };
+        case actionTypes.CREATE_TIME_START:
+            return {
+                ...state
+            };  
+        case actionTypes.CREATE_TIME_FAIL:
+            return {
+                ...state
+            };     
+            
+        case actionTypes.DELETE_TIME_SUCCESS:
+            const newTimeArray = state.time.filter(item => item.id !== action.id);
+            return {
+                ...state,
+                time: newTimeArray
+            }; 
+        case actionTypes.DELETE_TIME_START:
+            return {
+                ...state
+            };   
+        case actionTypes.DELETE_TIME_FAIL:
+            return {
+                ...state
+            };
         default:
             return state;
     }    

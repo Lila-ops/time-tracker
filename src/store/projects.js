@@ -34,7 +34,7 @@ export const addProject = (project) => {
             dispatch(addProjectFail(error));
         } );
     }
-}
+};
 
 //Edit project
 export const editProjectStart = () => {

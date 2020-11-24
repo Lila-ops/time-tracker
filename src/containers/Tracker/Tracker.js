@@ -1,10 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { Form, Col, Button, Table, thead, tbody, tr, th, td} from 'react-bootstrap';
 import { connect } from 'react-redux';
-// import { v4 as uuidv4 } from 'uuid';
 import { Link } from "react-router-dom";
 
-// import * as actionTypes from '../../store/actions';
 import * as actions from '../../store/projects';
 
 class Tracker extends Component {
@@ -26,15 +24,16 @@ class Tracker extends Component {
         const { name, value } = e.target;
 
         const updatedForm = {
-            ...this.state.project
+            ...this.state
         };
-        //TODO
-        // const updatedFormElement = {
-        //     ...updatedForm[name]
-        // };
 
-        updatedForm[name] = value;
-        this.setState({project: updatedForm});
+        const updatedFormElement = {
+            ...updatedForm.project
+        };
+
+        
+        updatedFormElement[name] = value;
+        this.setState({project: updatedFormElement});
     }
 
     formHandler = (e) => {
@@ -137,7 +136,7 @@ class Tracker extends Component {
                                 onChange={this.inputChangeHandler} />
                         </Col>
                         <Col>
-                            <Button variant="primary" type="submit" >{btnName}</Button>
+                            <Button variant="primary" type="submit">{btnName}</Button>
                         </Col>
                     </Form.Row>
                 </Form>
